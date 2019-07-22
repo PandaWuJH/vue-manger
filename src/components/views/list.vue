@@ -9,10 +9,15 @@
     </div>
 
     <div class="input">
-      <el-input placeholder="请输入内容" style="width:300px" v-model="usersObj.query" @keyup.enter.native="init">
-        <el-button slot="append" icon="el-icon-search" @click="init"></el-button>
+      <el-input
+        placeholder="请输入内容"
+        style="width:300px"
+        v-model="usersObj.query"
+        @keyup.enter.native="init"
+      >
+        <el-button slot="append" icon="el-icon-search" @click.native="init"></el-button>
       </el-input>
-      <el-button type="success" round class="searchbtn">添加用户</el-button>
+      <el-button type="success" round class="searchbtn" @click="addUserdiglog">添加用户</el-button>
     </div>
 
     <div class="table">
@@ -45,24 +50,73 @@
     </div>
 
     <div class="pagination">
-       <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="usersObj.pagenum"
-      :page-sizes="[1, 2, 3, 4,5]"
-      :page-size="usersObj.pagesize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total">
-    </el-pagination>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="usersObj.pagenum"
+        :page-sizes="[1, 2, 3, 4,5]"
+        :page-size="usersObj.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      ></el-pagination>
     </div>
+    <el-dialog title="添加用户" :visible.sync="dialogAddVisible">
+      <el-form :model="addUser" :rules="rules" ref="addUser">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input v-model="addUser.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth" prop="password">
+          <el-input v-model="addUser.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="addmobile">
+          <el-input v-model="addUser.addmobile" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="addemail">
+          <el-input v-model="addUser.addemail" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogAddVisible=false">取 消</el-button>
+        <el-button type="primary" @click="addUsertosql">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getUsers } from '@/api/user.js'
+import { getUsers, addUsertosql } from '@/api/user.js'
 export default {
   data () {
     return {
+      addUser: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: '',
+        addmobile: '',
+        addemail: ''
+      },
+      rules: {
+        addmobile: [
+          { required: true, message: '请输入电话 ', trigger: 'blur' }
+        ],
+        addemail: [
+          {
+            required: true,
+            message: '请输入邮箱 ',
+            trigger: 'blur'
+          }
+        ],
+        username: [
+          { required: true, message: '请输入用户名 ', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码 ', trigger: 'blur' }
+        ]
+      },
+
+      formLabelWidth: '120px',
+      dialogAddVisible: false,
       total: 5,
       usersObj: {
         query: '',
@@ -99,6 +153,32 @@ export default {
         .catch(err => {
           console.log(err)
         })
+    },
+    addUserdiglog () {
+      this.dialogAddVisible = true
+    },
+    addUsertosql () {
+      this.$refs['addUser'].validate(valid => {
+        if (valid) {
+          addUsertosql(this.addUser).then(res => {
+            this.$refs['addUser'].resetFields()
+            this.init()
+            this.dialogAddVisible = false
+            this.$message({
+              showClose: true,
+              message: '添加用户成功',
+              type: 'success'
+            })
+          }).catch(err => {
+            console.log(err)
+            this.$message({
+              showClose: true,
+              message: '添加用户失败',
+              type: 'error'
+            })
+          })
+        }
+      })
     }
   }
 }
@@ -108,7 +188,7 @@ export default {
   margin: 15px 0;
 }
 .input,
- .table{
+.table {
   margin-bottom: 10px;
 }
 .table,

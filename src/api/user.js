@@ -15,3 +15,12 @@ export const getUsers = (params) => {
     params
   })
 }
+
+// 添加用户
+export const addUsertosql = (data) => {
+  return axios({
+    url: 'users',
+    method: 'post',
+    data
+  })
+}
