@@ -35,13 +35,13 @@
           <template slot-scope="scope">
             <div class="icon-font">
               <el-tooltip content="编辑" placement="top" effect="light">
-                <i class="el-icon-edit"></i>
+                <i class="el-icon-edit" @click="editUserdiglog(scope.row)"></i>
               </el-tooltip>
               <el-tooltip content="分享" placement="top" effect="light">
                 <i class="el-icon-share"></i>
               </el-tooltip>
               <el-tooltip content="删除" placement="top" effect="light">
-                <i class="el-icon-delete"></i>
+                <i class="el-icon-delete" @click="deleteById(scope.row.id)"></i>
               </el-tooltip>
             </div>
           </template>
@@ -68,11 +68,11 @@
         <el-form-item label="密码" :label-width="formLabelWidth" prop="password">
           <el-input v-model="addUser.password" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="电话" :label-width="formLabelWidth" prop="addmobile">
-          <el-input v-model="addUser.addmobile" autocomplete="off"></el-input>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model="addUser.mobile" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="addemail">
-          <el-input v-model="addUser.addemail" autocomplete="off"></el-input>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="addUser.email" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -80,11 +80,35 @@
         <el-button type="primary" @click="addUsertosql">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="编辑用户" :visible.sync="dialogEditVisible">
+      <el-form :model="editUser" :rules="rules" ref="editUser">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username" style="width:280px">
+          <el-input v-model="editUser.username" autocomplete="off" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model="editUser.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="editUser.email" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <p>{{editUser.email}}</p>
+      <p>{{editUser.mobile}}</p>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogEditVisible=false">取 消</el-button>
+        <el-button type="primary" @click="editUserById">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getUsers, addUsertosql } from '@/api/user.js'
+import {
+  getUsers,
+  addUsertosql,
+  editUserById,
+  deleteById
+} from '@/api/user.js'
 export default {
   data () {
     return {
@@ -96,11 +120,18 @@ export default {
         addmobile: '',
         addemail: ''
       },
+      editUser: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: '',
+        addmobile: '',
+        addemail: '',
+        id: 0
+      },
       rules: {
-        addmobile: [
-          { required: true, message: '请输入电话 ', trigger: 'blur' }
-        ],
-        addemail: [
+        mobile: [{ required: true, message: '请输入电话 ', trigger: 'blur' }],
+        email: [
           {
             required: true,
             message: '请输入邮箱 ',
@@ -110,13 +141,13 @@ export default {
         username: [
           { required: true, message: '请输入用户名 ', trigger: 'blur' }
         ],
-        password: [
-          { required: true, message: '请输入密码 ', trigger: 'blur' }
-        ]
+        password: [{ required: true, message: '请输入密码 ', trigger: 'blur' }]
       },
-
+      id: 0,
+      // scope: '',
       formLabelWidth: '120px',
       dialogAddVisible: false,
+      dialogEditVisible: false,
       total: 5,
       usersObj: {
         query: '',
@@ -154,31 +185,86 @@ export default {
           console.log(err)
         })
     },
+    // 点击显示新增用户对话框
     addUserdiglog () {
       this.dialogAddVisible = true
     },
+    // 新增用户
     addUsertosql () {
       this.$refs['addUser'].validate(valid => {
         if (valid) {
-          addUsertosql(this.addUser).then(res => {
-            this.$refs['addUser'].resetFields()
-            this.init()
-            this.dialogAddVisible = false
-            this.$message({
-              showClose: true,
-              message: '添加用户成功',
-              type: 'success'
+          addUsertosql(this.addUser)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta === 200) {
+                this.$refs['addUser'].resetFields()
+                this.init()
+                this.dialogAddVisible = false
+                this.$message({
+                  showClose: true,
+                  message: '添加用户成功',
+                  type: 'success'
+                })
+              }
             })
-          }).catch(err => {
-            console.log(err)
-            this.$message({
-              showClose: true,
-              message: '添加用户失败',
-              type: 'error'
+            .catch(err => {
+              console.log(err)
+              this.$message({
+                showClose: true,
+                message: '添加用户失败',
+                type: 'error'
+              })
             })
-          })
         }
       })
+    },
+    // 点击编辑弹出对话框并显示当前用户信息
+    editUserdiglog (row) {
+      this.dialogEditVisible = true
+      this.editUser.id = row.id
+      this.editUser.username = row.username
+      this.editUser.password = row.password
+      this.editUser.mobile = row.mobile
+      this.editUser.email = row.email
+    },
+    // 编辑用户
+    async editUserById () {
+      console.log(this.editUser)
+      var res = await editUserById(this.editUser)
+      this.dialogEditVisible = false
+      this.init()
+      this.$refs['editUser'].resetFields()
+      console.log(res)
+    },
+    // 删除用户
+    deleteById (id) {
+      this.$confirm('此操作将永久删除id为' + id + '的用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          console.log(id)
+          this.id = id
+          deleteById(this.id)
+            .then(res => {
+              console.log(res)
+              this.init()
+            })
+            .catch(err => {
+              console.log(err)
+            })
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
     }
   }
 }

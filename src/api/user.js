@@ -24,3 +24,27 @@ export const addUsertosql = (data) => {
     data
   })
 }
+
+// 根据id获取用户信息
+// export const getUserById = (row) => {
+//   return axios({
+//     url: `users/${row.id}`
+//   })
+// }
+
+// 编辑用户
+export const editUserById = (obj) => {
+  return axios({
+    url: `users/${obj.id}`,
+    method: 'put',
+    data: { email: obj.email, mobile: obj.mobile }
+  })
+}
+
+// 删除用户
+export const deleteById = (id) => {
+  return axios({
+    url: `users/${id}`,
+    method: 'delete'
+  })
+}
