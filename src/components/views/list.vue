@@ -28,7 +28,7 @@
         <el-table-column prop="mobile" label="电话" width="280" align="center"></el-table-column>
         <el-table-column prop="address" label="用户状态" align="center" width="180">
           <template slot-scope="scope">
-            <el-switch v-model="value" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+            <el-switch v-model="scope.row.mg_state" @change="changeStatus(scope.row.mg_state,scope.row.id)" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
           </template>
         </el-table-column>
         <el-table-column prop="address" label="操作" align="center">
@@ -107,7 +107,8 @@ import {
   getUsers,
   addUsertosql,
   editUserById,
-  deleteById
+  deleteById,
+  changeStatus
 } from '@/api/user.js'
 export default {
   data () {
@@ -152,12 +153,22 @@ export default {
       usersObj: {
         query: '',
         pagenum: 1,
-        pagesize: 1
+        pagesize: 3
       },
       value: true,
       usersData: []
     }
   },
+  // watch: {
+  //   total () {
+  //     console.log(111)
+  //     if (this.total === (this.pagenum) * this.pagesize) {
+  //       console.log(222)
+  //       this.pagenum -= 1
+  //       this.init()
+  //     }
+  //   }
+  // },
   mounted () {
     this.init()
   },
@@ -196,7 +207,7 @@ export default {
           addUsertosql(this.addUser)
             .then(res => {
               console.log(res)
-              if (res.data.meta === 200) {
+              if (res.data.meta.status === 201) {
                 this.$refs['addUser'].resetFields()
                 this.init()
                 this.dialogAddVisible = false
@@ -220,6 +231,7 @@ export default {
     },
     // 点击编辑弹出对话框并显示当前用户信息
     editUserdiglog (row) {
+      console.log(row)
       this.dialogEditVisible = true
       this.editUser.id = row.id
       this.editUser.username = row.username
@@ -249,6 +261,11 @@ export default {
           deleteById(this.id)
             .then(res => {
               console.log(res)
+              if (Math.ceil((this.total - 1) / this.usersObj.pagesize) < this.usersObj.pagenum) {
+                this.usersObj.pagenum--
+              } else if ((this.total - 1) / this.usersObj.pagesize <= 1) {
+                this.usersObj.pagenum = 1
+              }
               this.init()
             })
             .catch(err => {
@@ -265,6 +282,18 @@ export default {
             message: '已取消删除'
           })
         })
+    },
+    // 参数传入即可调用，修改用户状态
+    async changeStatus (status, id) {
+      console.log(status, id)
+      let res = await changeStatus(status, id)
+      console.log(res)
+      if (res.data.meta.status === 200) {
+        this.$message({
+          type: 'success',
+          message: '状态修改成功'
+        })
+      }
     }
   }
 }
