@@ -5,6 +5,8 @@ import VueRouter from 'vue-router'
 // 引入路由组件
 import Login from '@/components/login.vue'
 import Index from '@/components/index.vue'
+import List from '@/components/views/list.vue'
+import Welcome from '@/components/welcome.vue'
 // 让App使用路由
 Vue.use(VueRouter)
 // 创建路由对象
@@ -18,13 +20,26 @@ const router = new VueRouter({
     },
     {
       name: 'default',
-      path: '/'
-      // redirect: { name: 'login' }
+      path: '/',
+      redirect: { name: 'welcome' }
     },
     {
       name: 'index',
       path: '/index',
-      component: Index
+      component: Index,
+      // redirect: { name: 'welcome' },
+      children: [
+        {
+          name: 'list',
+          path: 'list',
+          component: List
+        },
+        {
+          name: 'welcome',
+          path: 'welcome',
+          component: Welcome
+        }
+      ]
     }
   ]
 })

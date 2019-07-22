@@ -42,7 +42,7 @@ export default {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           var data = this.loginForm
-          console.log(data)
+          // console.log(data)
 
           // axios({
           //   url: 'login',
@@ -50,10 +50,11 @@ export default {
           //   data
           // })
           login(data).then(res => {
-            console.log(data)
+            // console.log(data)
             if (res.data.meta.status === 200) {
-              this.$router.push({ name: 'index' })
               localStorage.setItem('itcast_manger', res.data.data.token)
+              this.$router.push({ name: 'index' })
+
               console.log(res.data)
             } else if (res.data.meta.status === 400) {
               this.$message({

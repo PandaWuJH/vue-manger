@@ -4,6 +4,7 @@
       <el-aside width="auto">
         <div class="logo"></div>
         <el-menu
+          :router="true"
           :collapse="iscollapse"
           :unique-opened="true"
           class="el-menu-vertical-demo"
@@ -11,12 +12,12 @@
           text-color="#fff"
           active-text-color="#ffd04b"
         >
-          <el-submenu index="1aaa">
+          <el-submenu index="">
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>导航一</span>
             </template>
-            <el-menu-item index="1-3dwd">选项3</el-menu-item>
+            <el-menu-item index="/index/list">选项3</el-menu-item>
           </el-submenu>
           <el-submenu index="1aaaa">
             <template slot="title">
@@ -47,7 +48,8 @@
           <span class="system-title">电商后台管理系统</span>
           <a href="javascrpt:;" class="welcome">退出</a>
         </el-header>
-        <el-main>Main</el-main>
+        <!-- <el-main>Main</el-main> -->
+        <router-view></router-view>
       </el-container>
     </el-container>
   </div>
