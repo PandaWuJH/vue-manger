@@ -10,21 +10,22 @@
           class="el-menu-vertical-demo"
           background-color="#545c64"
           text-color="#fff"
-          active-text-color="#ffd04b"
+          active-text-color="#409efd"
         >
           <el-submenu index="">
             <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
+              <i class="el-icon-user-solid"></i>
+              <span>用户管理</span>
             </template>
-            <el-menu-item index="/index/list">选项3</el-menu-item>
+            <el-menu-item index="/index/list">用户列表</el-menu-item>
           </el-submenu>
           <el-submenu index="1aaaa">
             <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
+              <i class="el-icon-lock"></i>
+              <span>权限管理</span>
             </template>
-            <el-menu-item index="1-3asdasd">选项3</el-menu-item>
+            <el-menu-item index="/index/roleList">角色列表</el-menu-item>
+            <el-menu-item index="/index/powerList">权限列表</el-menu-item>
           </el-submenu>
           <el-submenu index="1dfds">
             <template slot="title">
@@ -44,12 +45,12 @@
       </el-aside>
       <el-container>
         <el-header>
-          <span class="myicon myicon-menu toggle-btn" @click="iscollapse = !iscollapse"></span>
-          <span class="system-title">电商后台管理系统</span>
-          <a href="javascrpt:;" class="welcome">退出</a>
+          <span class="myicon myicon-menu toggle-btn" @click="iscollapse = !iscollapse" style="color:white"></span>
+          <span class="system-title" style="font-size:30px;color:white">电商后台管理系统</span>
+          <a href="javascrpt:;" class="welcome" style="color:white">退出</a>
         </el-header>
-        <!-- <el-main>Main</el-main> -->
-        <router-view></router-view>
+        <el-main><router-view></router-view></el-main>
+
       </el-container>
     </el-container>
   </div>
@@ -83,6 +84,7 @@ export default {
   }
   .el-aside {
     background-color: #545c64;
+    // height: 100%;
   }
   .el-header {
     display: flex;
@@ -103,5 +105,8 @@ export default {
     background-size: cover;
     background-color: #fff;
   }
+}
+.toggle-btn{
+  font-size: 30px;
 }
 </style>

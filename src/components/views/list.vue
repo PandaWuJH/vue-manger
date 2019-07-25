@@ -1,5 +1,6 @@
 <template>
   <div class="users">
+    <!-- 面包屑 -->
     <div class="breadcrumb">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -7,7 +8,7 @@
         <el-breadcrumb-item>用户列表</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-
+    <!-- 搜索框 -->
     <div class="input">
       <el-input
         placeholder="请输入内容"
@@ -19,7 +20,7 @@
       </el-input>
       <el-button type="success" round class="searchbtn" @click="addUserdiglog">添加用户</el-button>
     </div>
-
+    <!-- 表格 -->
     <div class="table">
       <el-table border :data="usersData" style="width: 100%">
         <el-table-column type="index"></el-table-column>
@@ -28,18 +29,26 @@
         <el-table-column prop="mobile" label="电话" width="280" align="center"></el-table-column>
         <el-table-column prop="address" label="用户状态" align="center" width="180">
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.mg_state" @change="changeStatus(scope.row.mg_state,scope.row.id)" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+            <el-switch
+              v-model="scope.row.mg_state"
+              @change="changeStatus(scope.row.mg_state,scope.row.id,scope.row.username)"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+            ></el-switch>
           </template>
         </el-table-column>
         <el-table-column prop="address" label="操作" align="center">
           <template slot-scope="scope">
             <div class="icon-font">
               <el-tooltip content="编辑" placement="top" effect="light">
+                <!-- 编辑按钮 -->
                 <i class="el-icon-edit" @click="editUserdiglog(scope.row)"></i>
               </el-tooltip>
-              <el-tooltip content="分享" placement="top" effect="light">
-                <i class="el-icon-share"></i>
+              <!-- 分配角色按钮 -->
+              <el-tooltip content="分配" placement="top" effect="light">
+                <i class="el-icon-share" @click="allotRoledialog(scope.row)"></i>
               </el-tooltip>
+              <!-- 删除按钮 -->
               <el-tooltip content="删除" placement="top" effect="light">
                 <i class="el-icon-delete" @click="deleteById(scope.row.id)"></i>
               </el-tooltip>
@@ -48,7 +57,7 @@
         </el-table-column>
       </el-table>
     </div>
-
+    <!-- 分页 -->
     <div class="pagination">
       <el-pagination
         @size-change="handleSizeChange"
@@ -60,6 +69,7 @@
         :total="total"
       ></el-pagination>
     </div>
+    <!-- 添加用户对话框 -->
     <el-dialog title="添加用户" :visible.sync="dialogAddVisible">
       <el-form :model="addUser" :rules="rules" ref="addUser">
         <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
@@ -77,9 +87,11 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogAddVisible=false">取 消</el-button>
+
         <el-button type="primary" @click="addUsertosql">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 编辑用户对话框 -->
     <el-dialog title="编辑用户" :visible.sync="dialogEditVisible">
       <el-form :model="editUser" :rules="rules" ref="editUser">
         <el-form-item label="用户名" :label-width="formLabelWidth" prop="username" style="width:280px">
@@ -92,11 +104,31 @@
           <el-input v-model="editUser.email" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
-      <p>{{editUser.email}}</p>
-      <p>{{editUser.mobile}}</p>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogEditVisible=false">取 消</el-button>
         <el-button type="primary" @click="editUserById">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 添加分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="dialogallotVisible">
+      <el-form :model="allotRole" ref="allotRole">
+        <el-form-item label="用户名">
+          <span>{{allotRole.username}}</span>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="allotRole.rid" clearable placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogEditVisible=false">取 消</el-button>
+        <el-button type="primary" @click="allotRolesubmit">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -108,11 +140,19 @@ import {
   addUsertosql,
   editUserById,
   deleteById,
-  changeStatus
+  changeStatus,
+  allotRole
 } from '@/api/user.js'
+import { getRole } from '@/api/role.js'
 export default {
   data () {
     return {
+      roleList: [],
+      allotRole: {
+        username: '',
+        id: '',
+        rid: ''
+      },
       addUser: {
         username: '',
         password: '',
@@ -149,13 +189,14 @@ export default {
       formLabelWidth: '120px',
       dialogAddVisible: false,
       dialogEditVisible: false,
+      dialogallotVisible: false,
       total: 5,
       usersObj: {
         query: '',
         pagenum: 1,
         pagesize: 3
       },
-      value: true,
+      // value: true,
       usersData: []
     }
   },
@@ -171,6 +212,7 @@ export default {
   // },
   mounted () {
     this.init()
+    this.initRole()
   },
   methods: {
     handleSizeChange (val) {
@@ -183,6 +225,7 @@ export default {
       this.init()
       console.log(`当前页: ${val}`)
     },
+    // 获取用户列表
     init () {
       getUsers(this.usersObj)
         .then(res => {
@@ -191,6 +234,17 @@ export default {
             this.usersData = res.data.data.users
             this.total = res.data.data.total
           }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 获取角色列表
+    initRole () {
+      getRole()
+        .then(res => {
+          this.roleList = res.data.data
+          console.log(res)
         })
         .catch(err => {
           console.log(err)
@@ -261,7 +315,10 @@ export default {
           deleteById(this.id)
             .then(res => {
               console.log(res)
-              if (Math.ceil((this.total - 1) / this.usersObj.pagesize) < this.usersObj.pagenum) {
+              if (
+                Math.ceil((this.total - 1) / this.usersObj.pagesize) <
+                this.usersObj.pagenum
+              ) {
                 this.usersObj.pagenum--
               } else if ((this.total - 1) / this.usersObj.pagesize <= 1) {
                 this.usersObj.pagenum = 1
@@ -294,24 +351,55 @@ export default {
           message: '状态修改成功'
         })
       }
+    },
+    // 弹出分配角色对话框
+    allotRoledialog (row) {
+      this.allotRole.id = row.id
+      this.dialogallotVisible = true
+      this.allotRole.username = row.username
+      this.allotRole.rid = row.rid
+      console.log(row)
+    },
+    allotRolesubmit () {
+      console.log(this.allotRole.id)
+      console.log(this.allotRole.rid)
+      if (!this.allotRole.rid) {
+        this.$message({
+          type: 'warning',
+          message: '请给用户分配角色'
+        })
+      } else {
+        allotRole(this.allotRole.id, this.allotRole.rid)
+          .then(res => {
+            this.dialogallotVisible = false
+            this.init()
+            this.$message({
+              type: 'success',
+              message: '分配用户角色成功'
+            })
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
     }
   }
 }
 </script>
 <style lang="less" scoped>
-.breadcrumb {
-  margin: 15px 0;
-}
+// .breadcrumb {
+//   margin: 15px 0;
+// }
 .input,
 .table {
   margin-bottom: 10px;
 }
-.table,
-.input,
-.breadcrumb,
-.pagination {
-  margin-left: 10px;
-}
+// .table,
+// .input,
+// .breadcrumb,
+// .pagination {
+//   margin-left: 10px;
+// }
 .searchbtn {
   margin-left: 10px !important;
 }

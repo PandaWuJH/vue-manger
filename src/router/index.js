@@ -7,6 +7,8 @@ import Login from '@/components/login.vue'
 import Index from '@/components/index.vue'
 import List from '@/components/views/list.vue'
 import Welcome from '@/components/welcome.vue'
+import RoleList from '@/components/views/roleList.vue'
+import PowerList from '@/components/views/powerList.vue'
 // 让App使用路由
 Vue.use(VueRouter)
 // 创建路由对象
@@ -38,7 +40,17 @@ const router = new VueRouter({
           name: 'welcome',
           path: 'welcome',
           component: Welcome
-        }
+        },
+        {
+          name:"powerList",
+          path:"powerList",
+          component:PowerList
+        },
+        {
+        name:"roleList",
+        path:"roleList",
+        component:RoleList
+      }
       ]
     }
   ]

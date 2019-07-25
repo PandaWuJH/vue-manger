@@ -56,3 +56,12 @@ export const changeStatus = (type, uid) => {
     method: 'put'
   })
 }
+
+// 给用户分配角色
+export const allotRole = (id, rid) => {
+  return axios({
+    url: `users/${id}/role`,
+    method: 'put',
+    data: { rid: rid }
+  })
+}
