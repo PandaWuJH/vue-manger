@@ -8,6 +8,13 @@
         <el-breadcrumb-item>角色列表</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
+    <el-button
+      type="primary"
+      round
+      class="searchbtn"
+      @click="addRolediglog"
+      style="margin-bottom:10px"
+    >添加角色</el-button>
     <!-- 表格 -->
     <el-table border :data="roleData" style="width: 100%">
       <!-- 插入展开列 -->
@@ -50,13 +57,13 @@
       <el-table-column prop="address" label="操作" align="center">
         <template slot-scope="scope">
           <div class="icon-font">
-            <el-tooltip content="添加" placement="top" effect="light">
+            <el-tooltip content="编辑" placement="top" effect="light">
               <!-- 编辑按钮 -->
-              <el-button type="primary" icon="el-icon-circle-plus"></el-button>
+            <el-button type="primary" icon="el-icon-edit" @click="submitEditRole(scope.row)"></el-button>
             </el-tooltip>
             <!-- 分配角色按钮 -->
             <el-tooltip content="权限分配" placement="top" effect="light">
-              <el-button type="primary" icon="el-icon-edit" @click="opendialogPower(scope.row)"></el-button>
+              <el-button type="primary" icon="el-icon-s-check" @click="opendialogPower(scope.row)"></el-button>
             </el-tooltip>
             <!-- 删除按钮 -->
             <el-tooltip content="删除" placement="top" effect="light">
@@ -82,25 +89,73 @@
       ></el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogPowerVisible = false">取 消</el-button>
-        <el-button type="primary"  @click="addPowerSumbit">确 定</el-button>
+        <el-button type="primary" @click="addPowerSumbit">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加角色对话框 -->
+    <el-dialog title="收货地址" :visible.sync="dialogaddRoleVisible">
+      <el-form :model="addRoleForm" :rules="rules" ref="addRoleForm">
+        <el-form-item label="用户名" prop="roleName">
+          <el-input v-model="addRoleForm.roleName" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="描述">
+          <el-input v-model="addRoleForm.roleDesc" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogaddRoleVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addRoleSubmit">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 编辑角色对话框 -->
+    <el-dialog title="编辑角色" :visible.sync="editFormVisible">
+  <el-form :model="editForm" ref="editForm">
+    <el-form-item label="角色名称" >
+      <el-input v-model="editForm.roleName" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="角色描述" >
+      <el-input v-model="editForm.roleDesc" autocomplete="off"></el-input>
+    </el-form-item>
+
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="editFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="submitEdit()">确 定</el-button>
+  </div>
+</el-dialog>
   </div>
 </template>
 
 <script>
-import { getRole } from '@/api/role.js'
+import { getRole, addRole, editRole } from '@/api/role.js'
 import { delPower, getAllPower, impower } from '@/api/power.js'
 export default {
   data () {
     return {
+      rules: {
+        roleName: [ { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ]
+      },
+      editForm: {
+        roleName: '',
+        roleDesc: ''
+      },
+      addRoleForm: {
+        roleName: '',
+        roleDesc: ''
+      },
       rid: '',
+      id: '',
       defaultCheckedKeys: [],
       tree: [],
       defaultProps: {
         children: 'children',
         label: 'authName'
       },
+      editFormVisible: false,
+      dialogaddRoleVisible: false,
       dialogPowerVisible: false,
       tags: [{ name: '标签一', type: '' }, { name: '标签二', type: 'success' }],
       roleData: []
@@ -130,7 +185,9 @@ export default {
           console.log(err)
         })
     },
+    // 显示权限分配对话框及显示选中权限
     opendialogPower (row) {
+      this.initPower()
       this.defaultCheckedKeys.length = 0
       this.dialogPowerVisible = true
       this.rid = row.id
@@ -148,9 +205,10 @@ export default {
           }
         })
       }
-      this.initPower()
+
       console.log(this.defaultCheckedKeys)
     },
+    // 权限分配
     async addPowerSumbit () {
       this.dialogPowerVisible = false
       // var obj = this.$refs.tree.getCheckedKeys()
@@ -196,6 +254,46 @@ export default {
         .catch(err => {
           console.log(err)
         })
+    },
+    addRolediglog () {
+      this.dialogaddRoleVisible = true
+      console.log(this.addRoleForm)
+    },
+    addRoleSubmit () {
+      this.$refs.addRoleForm.validate(valid => {
+        if (valid) {
+          addRole(this.addRoleForm).then(res => {
+            console.log(res)
+            this.$message({
+              type: 'success',
+              message: '创建成功'
+            })
+            this.initRole()
+            this.dialogaddRoleVisible = false
+          }).catch(err => {
+            console.log(err)
+          })
+        }
+      })
+    },
+    submitEditRole (row) {
+      console.log(row)
+      this.id = row.id
+      this.editForm.roleName = row.roleName
+      this.editForm.roleDesc = row.roleDesc
+      this.editFormVisible = true
+    },
+    async submitEdit () {
+      let res = await editRole(this.id, this.editForm)
+      console.log(res)
+      if (res.data.meta.status === 200) {
+        this.$message({
+          type: 'success',
+          message: '编辑角色成功'
+        })
+        this.editFormVisible = false
+        this.initRole()
+      }
     }
   },
   mounted () {

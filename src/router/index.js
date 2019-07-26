@@ -29,11 +29,11 @@ const router = new VueRouter({
       name: 'index',
       path: '/index',
       component: Index,
-      // redirect: { name: 'welcome' },
+      redirect: { name: 'welcome' },
       children: [
         {
-          name: 'list',
-          path: 'list',
+          name: 'users',
+          path: 'users',
           component: List
         },
         {
@@ -42,15 +42,15 @@ const router = new VueRouter({
           component: Welcome
         },
         {
-          name:"powerList",
-          path:"powerList",
-          component:PowerList
+          name: 'rights',
+          path: 'rights',
+          component: PowerList
         },
         {
-        name:"roleList",
-        path:"roleList",
-        component:RoleList
-      }
+          name: 'roles',
+          path: 'roles',
+          component: RoleList
+        }
       ]
     }
   ]

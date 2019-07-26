@@ -12,35 +12,14 @@
           text-color="#fff"
           active-text-color="#409efd"
         >
-          <el-submenu index="">
-            <template slot="title">
+          <el-submenu :index="first.id+''" v-for="first in menus">
+            <template slot="title" :index="'/index/'+first.path">
               <i class="el-icon-user-solid"></i>
-              <span>用户管理</span>
+              <span>{{first.authName}}</span>
             </template>
-            <el-menu-item index="/index/list">用户列表</el-menu-item>
+            <el-menu-item v-for="second in first.children" :index="'/index/'+second.path">{{second.authName}}</el-menu-item>
           </el-submenu>
-          <el-submenu index="1aaaa">
-            <template slot="title">
-              <i class="el-icon-lock"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item index="/index/roleList">角色列表</el-menu-item>
-            <el-menu-item index="/index/powerList">权限列表</el-menu-item>
-          </el-submenu>
-          <el-submenu index="1dfds">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
-            </template>
-            <el-menu-item index="1-3dasdas">选项3</el-menu-item>
-          </el-submenu>
-          <el-submenu index="1fdsfewf">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
-            </template>
-            <el-menu-item index="1-3adasdsa">选项3</el-menu-item>
-          </el-submenu>
+
         </el-menu>
       </el-aside>
       <el-container>
@@ -57,13 +36,27 @@
 </template>
 
 <script>
+import { getMenus } from '@/api/power.js'
 export default {
   data () {
     return {
+      menus: [],
       true: true,
       iscollapse: false
     }
+  },
+  mounted () {
+    getMenus().then(res => {
+      console.log(res)
+      if (res.data.meta.status === 200) {
+        this.menus = res.data.data
+        console.log(this.menus)
+      }
+    }).catch(err => {
+      console.log(err)
+    })
   }
+
 }
 </script>
 

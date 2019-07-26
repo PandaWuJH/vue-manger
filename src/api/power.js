@@ -22,3 +22,10 @@ export const impower = (roleId, rids) => {
     data: { rids }
   })
 }
+
+// 获取左侧菜单权限
+export const getMenus = () => {
+  return axios({
+    url: `menus`
+  })
+}
